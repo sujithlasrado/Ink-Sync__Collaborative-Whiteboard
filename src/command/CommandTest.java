@@ -49,10 +49,10 @@ public class CommandTest {
     @Test
     public void invokeCommandTest() {
         try {
-            Client clientInvoked = new Client("localhost", 4444);
+            Client clientInvoked = new Client("localhost");
             clientInvoked.getClientGUI().setupCanvas();
             lineSegmentObject.invokeCommand(clientInvoked.getCanvas());
-            Client clientDrawn = new Client("localhost", 4444);
+            Client clientDrawn = new Client("localhost");
             clientDrawn.getClientGUI().setupCanvas();
             clientDrawn.getCanvas().drawLineSegment(50, 50, 60, 60, 0, 10);
             BufferedImage imageInvoked = clientInvoked.getDrawingBuffer();

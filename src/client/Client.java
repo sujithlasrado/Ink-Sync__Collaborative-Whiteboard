@@ -17,6 +17,8 @@ import command.Command;
 
 public class Client {
 
+	// Default port for the server
+	private static final int DEFAULT_PORT = 4444;
 
 	//the username the client will go by in this session
 	//must be unique; no other clients can have this user name
@@ -52,8 +54,116 @@ public class Client {
 	PrintWriter out;
 	ClientReceiveProtocol receiveProtocol;
 	Thread receiveThread;
+	
+	// Flag to track if client is connected to server
+	private boolean isConnected = false;
 
 	private ClientGUI clientGUI;
+
+	/**
+	 * Creates a whiteboard client without connecting to server immediately.
+	 * Connection will be established later using connectWithPin method.
+	 */
+	public Client() {
+		addShutdownHook();
+	}
+	
+	/**
+	 * Connects to server using a PIN (last 3 digits of server IP).
+	 * Constructs the full server IP by taking the client's IP and replacing
+	 * the last 3 digits with the provided PIN.
+	 * 
+	 * @param pin the last 3 digits of the server IP address
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 */
+	public void connectWithPin(String pin) throws UnknownHostException, IOException {
+		// Get client's local IP address
+		String clientIP = getLocalIPAddress();
+		
+		// Remove leading zeros from PIN to get the actual number
+		String cleanPin = pin.replaceFirst("^0+", "");
+		if (cleanPin.isEmpty()) {
+			cleanPin = "0"; // If PIN was all zeros, use "0"
+		}
+		
+		// Remove last 3 digits and append the clean PIN
+		String serverIP = clientIP.substring(0, clientIP.lastIndexOf('.') + 1) + cleanPin;
+		
+		System.out.println("Client IP: " + clientIP);
+		System.out.println("PIN: " + pin + " (cleaned: " + cleanPin + ")");
+		System.out.println("Connecting to server IP: " + serverIP);
+		
+		// Connect to the server with timeout
+		socket = new Socket();
+		socket.connect(new java.net.InetSocketAddress(serverIP, DEFAULT_PORT), 5000); // 5 second timeout
+		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		out = new PrintWriter(socket.getOutputStream(), true);
+		receiveProtocol = new ClientReceiveProtocol(in, this);
+		receiveThread = new Thread(receiveProtocol);
+		receiveThread.start();
+		
+		// Mark as connected
+		isConnected = true;
+	}
+	
+	/**
+	 * Gets the local IP address of this client machine
+	 * @return the local IP address as a string
+	 */
+	private String getLocalIPAddress() {
+		try {
+			// Try to get the actual network IP address, not localhost
+			java.net.InetAddress localHost = java.net.InetAddress.getLocalHost();
+			String hostAddress = localHost.getHostAddress();
+			
+			// If we got localhost, try to find the actual network interface
+			if (hostAddress.equals("127.0.0.1")) {
+				java.net.NetworkInterface networkInterface = java.net.NetworkInterface.getByName("en0"); // WiFi on Mac
+				if (networkInterface == null) {
+					networkInterface = java.net.NetworkInterface.getByName("eth0"); // Ethernet
+				}
+				if (networkInterface == null) {
+					// Try to find any non-loopback interface
+					java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
+					while (interfaces.hasMoreElements()) {
+						java.net.NetworkInterface ni = interfaces.nextElement();
+						if (!ni.isLoopback() && ni.isUp()) {
+							java.util.Enumeration<java.net.InetAddress> addresses = ni.getInetAddresses();
+							while (addresses.hasMoreElements()) {
+								java.net.InetAddress addr = addresses.nextElement();
+								if (addr.getHostAddress().contains(".") && !addr.getHostAddress().startsWith("127.")) {
+									return addr.getHostAddress();
+								}
+							}
+						}
+					}
+				} else {
+					java.util.Enumeration<java.net.InetAddress> addresses = networkInterface.getInetAddresses();
+					while (addresses.hasMoreElements()) {
+						java.net.InetAddress addr = addresses.nextElement();
+						if (addr.getHostAddress().contains(".") && !addr.getHostAddress().startsWith("127.")) {
+							return addr.getHostAddress();
+						}
+					}
+				}
+			}
+			
+			return hostAddress;
+		} catch (Exception e) {
+			System.err.println("Error getting IP address: " + e.getMessage());
+			// Fallback to localhost if we can't get the actual IP
+			return "127.0.0.1";
+		}
+	}
+	
+	/**
+	 * Checks if the client is connected to the server
+	 * @return true if connected, false otherwise
+	 */
+	public boolean isConnected() {
+		return isConnected;
+	}
 
 	/**
 	 * Starts a whiteboard client connected to host on the given port.
@@ -63,8 +173,8 @@ public class Client {
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
-	public Client(String host, int port) throws UnknownHostException, IOException {
-		socket = new Socket(host, port);
+	public Client(String host) throws UnknownHostException, IOException {
+		socket = new Socket(host, DEFAULT_PORT);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
 		receiveProtocol = new ClientReceiveProtocol(in, this);
@@ -472,9 +582,14 @@ public class Client {
 					e.printStackTrace();
 				}
 			}
-			receiveProtocol.kill();
+			
+			// Only kill receiveProtocol if it exists (client is connected)
+			if (receiveProtocol != null) {
+				receiveProtocol.kill();
+			}
 
-			if(!socket.isClosed()) {
+			// Only close socket if it exists and is not already closed
+			if (socket != null && !socket.isClosed()) {
 				socket.shutdownInput();
 				socket.shutdownOutput();
 				socket.close();
@@ -530,13 +645,9 @@ public class Client {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-					Client client = new Client("localhost", 4444);
+					Client client = new Client(); // Use new constructor that doesn't connect immediately
 					client.startGUI();
-				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}

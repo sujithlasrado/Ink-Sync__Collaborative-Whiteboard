@@ -59,7 +59,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "users";
@@ -85,7 +85,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "users user1 user2 user3 user4";
@@ -111,7 +111,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "users";
@@ -142,7 +142,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "boards";
@@ -168,7 +168,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "boards board1 board2 board3";
@@ -194,7 +194,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "boards";
@@ -224,7 +224,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "boards";
@@ -255,7 +255,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "checkAndAddUser user board true";
@@ -281,7 +281,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "checkAndAddUser user2 board false";
@@ -307,7 +307,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "checkAndAddUser user board1 true";
@@ -350,7 +350,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "newBoard board true";
@@ -376,7 +376,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "newBoard board true";
@@ -406,7 +406,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "newBoard board false";
@@ -435,7 +435,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         String input = "newBoard board false";
@@ -465,7 +465,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         for (int i=0; i<100; i++) {
@@ -492,7 +492,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         for (int i=0; i<100; i++) {
@@ -521,7 +521,7 @@ public class ClientReceiveProtocolTest {
         });
         t1.start();
         
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         ClientReceiveProtocol protocol = client.getClientReceiveProtocol();
         
         assertFalse(client.getExitComplete().getValue());

@@ -38,6 +38,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import client.ClientGUI.NewBoardWorker;
+
 public class ClientGUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -58,6 +60,8 @@ public class ClientGUI extends JFrame {
 	private JScrollPane boardListScroller;
 	private JButton newBoardButton;
 	private JButton startButton;
+    private JTextField pinInputField;
+    private JButton connectButton;
 
     private JLabel currentUserBoard;
     
@@ -96,41 +100,45 @@ public class ClientGUI extends JFrame {
 
         ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
 
+        // Username section
         SequentialGroup hUsername = layout.createSequentialGroup();
         usernameTextField = new JTextField(10);
         usernameTextField.setName("username");
         usernameLabel = new JLabel("Username:");
         hUsername.addComponent(usernameLabel).addComponent(usernameTextField);
 
+        // PIN and Connect section
+        JLabel pinLabel = new JLabel("Server PIN:");
+        pinInputField = new JTextField(5);
+        connectButton = new JButton("Connect");
+        SequentialGroup hPin = layout.createSequentialGroup();
+        hPin.addComponent(pinLabel).addComponent(pinInputField).addComponent(connectButton);
+
+        // Board section (initially disabled)
         boardListModel = new DefaultListModel<String>();
-
-        // Get boards from server and add to data model
-        try {
-            String[] boards = client.getBoards();
-            for (int i=0; i<boards.length;i++) {
-                boardListModel.addElement(boards[i]);
-            }
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-
-        boardList = new JList<String>(boardListModel); //data has type Object[]
+        boardList = new JList<String>(boardListModel);
         boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         boardList.setLayoutOrientation(JList.VERTICAL);
         boardList.setVisibleRowCount(-1);
+        boardList.setEnabled(false); // Initially disabled until connected
         boardListScroller = new JScrollPane(boardList);
         boardListScroller.setPreferredSize(new Dimension(100, 150));
 
+        // New Board section (initially disabled)
         SequentialGroup hNewBoard = layout.createSequentialGroup();
         newBoardLabel = new JLabel("New Board:");
         newBoard = new JTextField(10);
         newBoard.setName("newBoard");
+        newBoard.setEnabled(false); // Initially disabled until connected
         newBoardButton = new JButton("Add Board");
+        newBoardButton.setEnabled(false); // Initially disabled until connected
         hNewBoard.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
 
+        // Start button (initially disabled)
         startButton = new JButton("Start");
+        startButton.setEnabled(false); // Initially disabled until connected
 
-        hGroup.addGroup(hUsername).addComponent(boardListScroller).addGroup(hNewBoard).addComponent(startButton);
+        hGroup.addGroup(hUsername).addGroup(hPin).addComponent(boardListScroller).addGroup(hNewBoard).addComponent(startButton);
 
         ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         SequentialGroup vAll = layout.createSequentialGroup();
@@ -138,10 +146,13 @@ public class ClientGUI extends JFrame {
         ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
         v1.addComponent(usernameLabel).addComponent(usernameTextField);
 
+        ParallelGroup vPin = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+        vPin.addComponent(pinLabel).addComponent(pinInputField).addComponent(connectButton);
+
         ParallelGroup v2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
         v2.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
 
-        vAll.addGroup(v1).addComponent(boardListScroller).addGroup(v2).addComponent(startButton);
+        vAll.addGroup(v1).addGroup(vPin).addComponent(boardListScroller).addGroup(v2).addComponent(startButton);
 
         vGroup.addGroup(vAll);
 
@@ -161,7 +172,50 @@ public class ClientGUI extends JFrame {
         //handles when the initial dialog is closed; kills the client
         dialog.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                client.kill();
+                // Only kill client if it's connected to avoid null pointer exceptions
+                if (client.isConnected()) {
+                    client.kill();
+                }
+            }
+        });
+        
+        // Connect button action listener
+        connectButton.addActionListener(new ActionListener() {
+            public synchronized void actionPerformed(ActionEvent e) {
+                String pin = pinInputField.getText().trim();
+                
+                // Validate PIN input
+                if (pin.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Please enter a server PIN.", "Try again", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if (!pin.matches("\\d{3}")) {
+                    JOptionPane.showMessageDialog(dialog, "PIN must be exactly 3 digits.", "Try again", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                try {
+                    // Connect to server using PIN
+                    client.connectWithPin(pin);
+                    
+                    // Enable board selection and related components
+                    boardList.setEnabled(true);
+                    newBoard.setEnabled(true);
+                    newBoardButton.setEnabled(true);
+                    startButton.setEnabled(true);
+                    connectButton.setEnabled(false); // Disable connect button after successful connection
+                    pinInputField.setEnabled(false); // Disable PIN input after connection
+                    
+                    // Load boards from server
+                    loadBoardsFromServer();
+                    
+                    JOptionPane.showMessageDialog(dialog, "Successfully connected to server!", "Connection", JOptionPane.INFORMATION_MESSAGE);
+                    
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dialog, "Failed to connect to server: " + ex.getMessage(), "Connection Error", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                }
             }
         });
         
@@ -207,7 +261,23 @@ public class ClientGUI extends JFrame {
             }
         });
 
-    }   
+    }
+    
+    /**
+     * Loads boards from server and populates the board list
+     */
+    private void loadBoardsFromServer() {
+        try {
+            String[] boards = client.getBoards();
+            boardListModel.removeAllElements();
+            for (int i = 0; i < boards.length; i++) {
+                boardListModel.addElement(boards[i]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(dialog, "Failed to load boards from server.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
     
     /**
      * A worker to create a new board in background before adding it to the list of available boards in the beginning dialog

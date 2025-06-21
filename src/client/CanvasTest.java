@@ -47,7 +47,7 @@ public class CanvasTest {
     @Test
     public void paintComponentTest() throws UnknownHostException, IOException, InterruptedException, ExecutionException {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         client.getCanvas().makeDrawingBuffer();
@@ -74,7 +74,7 @@ public class CanvasTest {
     @Test
     public void makeDrawingBufferTest() throws UnknownHostException, IOException, InterruptedException {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         client.getCanvas().makeDrawingBuffer();
@@ -99,7 +99,7 @@ public class CanvasTest {
     @Test
     public void fillWithWhiteTest() throws UnknownHostException, IOException, InterruptedException {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         client.getCanvas().makeDrawingBuffer();
@@ -125,13 +125,13 @@ public class CanvasTest {
     @Test
     public void drawLineSegmentTest() throws UnknownHostException, IOException, InterruptedException {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         client.getCanvas().makeDrawingBuffer();
         client.getCanvas().drawLineSegment(50, 50, 60, 60, 0, 10);
         
-        Client clientTest = new Client("localhost", 4444);
+        Client clientTest = new Client("localhost");
         clientTest.startGUI();
         clientTest.getClientGUI().setupCanvas();
         clientTest.getCanvas().makeDrawingBuffer();
@@ -156,7 +156,7 @@ public class CanvasTest {
     @Test
     public void updateCurrentUserBoardTest() throws UnknownHostException, IOException, InterruptedException {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         client.setUsername("Jessica");
@@ -173,7 +173,7 @@ public class CanvasTest {
     @Test
     public void addDrawingControllerTest() throws UnknownHostException, IOException, InterruptedException {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         DrawingController controller = new DrawingController(client);
@@ -187,7 +187,7 @@ public class CanvasTest {
     @Test
     public void switchBoardTest() throws Exception {
         Server server = Helper.serverSetup(4444);
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("localhost");
         client.startGUI();
         client.getClientGUI().setupCanvas();
         client.getCanvas().makeDrawingBuffer();

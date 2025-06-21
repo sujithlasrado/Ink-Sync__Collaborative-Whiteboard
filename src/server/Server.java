@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import command.Command;
+import server.ServerGUI;
 
 
 /**
@@ -300,10 +301,43 @@ public class Server {
             return;
         }
     	
-    	// Try to launch the server
+    	// Try to launch the server with GUI using SwingUtilities.invokeLater
 		try {
-			Server server = new Server(4444);
-			server.serve();
+			Server server = new Server(port);
+			
+			// Create and show the server GUI on the Event Dispatch Thread
+			javax.swing.SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						System.out.println("Creating server GUI...");
+						ServerGUI serverGUI = new ServerGUI(server);
+						serverGUI.setVisible(true);
+						System.out.println("Server GUI is now visible");
+						
+						// Run the server in a background thread so the GUI remains responsive
+						Thread serverThread = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									System.out.println("Starting server in background thread...");
+									server.serve();
+								} catch (Exception e) {
+									serverGUI.logMessage("Server error: " + e.getMessage());
+									e.printStackTrace();
+								}
+							}
+						});
+						serverThread.setDaemon(true); // Make it a daemon thread so it doesn't prevent JVM exit
+						serverThread.start();
+						
+					} catch (Exception e) {
+						System.err.println("Error creating server GUI: " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			});
+			
 		} catch (IOException e) {
 			System.out.println("Error in starting server.");
 			e.printStackTrace();

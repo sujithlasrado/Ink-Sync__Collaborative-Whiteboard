@@ -4,12 +4,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.EventListener;
-
 import javax.swing.*;
 
 /**
@@ -25,7 +24,18 @@ public class Canvas extends JPanel {
 	private EventListener currentListener;
 
 	public Canvas(Client client) {
-		this.client = client;
+    this.client = client;
+
+    // Initialize the drawing buffer as soon as the canvas has a size
+    this.addComponentListener(new java.awt.event.ComponentAdapter() {
+        @Override
+        public void componentResized(java.awt.event.ComponentEvent e) {
+            if (getWidth() > 0 && getHeight() > 0 && client.getDrawingBuffer() == null) {
+                makeDrawingBuffer();
+                repaint(); // just in case
+            }
+        }
+    });
 	}
 	/**
 	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)

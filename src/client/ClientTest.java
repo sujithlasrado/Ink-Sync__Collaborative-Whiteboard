@@ -26,7 +26,7 @@ public class ClientTest {
 	public void testBoards() throws Exception {
 		Server server = Helper.serverSetup(4444);
 		
-		Client client = new Client("localhost", 4444);
+		Client client = new Client("localhost");
 		assertTrue(client.newBoard("board1"));
 		assertFalse(client.newBoard("board1"));
 		
@@ -47,11 +47,11 @@ public class ClientTest {
 	@Test
 	public void testAllTheThings() throws Exception {
 		Server server = Helper.serverSetup(4444);
-		Client client1 = new Client("localhost", 4444);
+		Client client1 = new Client("localhost");
 		client1.startGUI();
 		ClientGUI client1GUI = client1.getClientGUI();
 		
-		Client client2 = new Client("localhost", 4444);
+		Client client2 = new Client("localhost");
 		client2.startGUI();
 		ClientGUI client2GUI = client2.getClientGUI();
 		

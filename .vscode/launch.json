@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Server",
+            "request": "launch",
+            "mainClass": "server.Server",
+            "projectRoot": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}",
+            "classPaths": [
+                "${workspaceFolder}/bin",
+                "${workspaceFolder}/lib/junit-4.13.2.jar",
+                "${workspaceFolder}/lib/hamcrest-2.2.jar"
+            ],
+            "sourcePaths": ["${workspaceFolder}/src"]
+        },
+        {
+            "type": "java",
+            "name": "Launch Client",
+            "request": "launch",
+            "mainClass": "client.Client",
+            "projectRoot": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}",
+            "classPaths": [
+                "${workspaceFolder}/bin",
+                "${workspaceFolder}/lib/junit-4.13.2.jar",
+                "${workspaceFolder}/lib/hamcrest-2.2.jar"
+            ],
+            "sourcePaths": ["${workspaceFolder}/src"]
+        }
+    ]
+} 

@@ -1,0 +1,109 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Server",
+            "type": "shell",
+            "command": "./run-server.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop Server",
+            "type": "shell",
+            "command": "./stop-server.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Check Server Status",
+            "type": "shell",
+            "command": "./check-server.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Client",
+            "type": "shell",
+            "command": "./run-client.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Project",
+            "type": "shell",
+            "command": "javac",
+            "args": [
+                "-cp",
+                "src:lib/junit-4.13.2.jar:lib/hamcrest-2.2.jar",
+                "-d",
+                "bin",
+                "src/**/*.java"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": ["$javac"]
+        },
+        {
+            "label": "Build Main Only",
+            "type": "shell",
+            "command": "find",
+            "args": [
+                "src",
+                "-name",
+                "*.java",
+                "!",
+                "-name",
+                "*Test.java",
+                "-exec",
+                "javac",
+                "-cp",
+                "src",
+                "-d",
+                "bin",
+                "{}",
+                "+"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": ["$javac"]
+        }
+    ]
+} 

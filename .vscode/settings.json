@@ -1,0 +1,19 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.project.exportJar.targetPath": "${workspaceFolder}/out",
+    "java.debug.settings.hotCodeReplace": "auto",
+    "java.project.explorer.showNonJavaResources": false,
+    "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": false,
+    "java.compile.workspace": "${workspaceFolder}",
+    "java.project.sourcePaths": ["src"],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ]
+} 

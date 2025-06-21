@@ -530,7 +530,7 @@ public class Client {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-					Client client = new Client("192.168.0.124", 4444);
+					Client client = new Client("localhost", 4444);
 					client.startGUI();
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block

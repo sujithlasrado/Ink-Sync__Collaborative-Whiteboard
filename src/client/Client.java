@@ -10,6 +10,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Enumeration;
+import java.net.NetworkInterface;
+import java.net.InetAddress;
 
 import javax.swing.SwingUtilities;
 
@@ -106,53 +109,36 @@ public class Client {
 	}
 	
 	/**
-	 * Gets the local IP address of this client machine
+	 * Gets the local IP address of this client machine by intelligently filtering out virtual interfaces.
 	 * @return the local IP address as a string
 	 */
 	private String getLocalIPAddress() {
 		try {
-			// Try to get the actual network IP address, not localhost
-			java.net.InetAddress localHost = java.net.InetAddress.getLocalHost();
-			String hostAddress = localHost.getHostAddress();
-			
-			// If we got localhost, try to find the actual network interface
-			if (hostAddress.equals("127.0.0.1")) {
-				java.net.NetworkInterface networkInterface = java.net.NetworkInterface.getByName("en0"); // WiFi on Mac
-				if (networkInterface == null) {
-					networkInterface = java.net.NetworkInterface.getByName("eth0"); // Ethernet
-				}
-				if (networkInterface == null) {
-					// Try to find any non-loopback interface
-					java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
-					while (interfaces.hasMoreElements()) {
-						java.net.NetworkInterface ni = interfaces.nextElement();
-						if (!ni.isLoopback() && ni.isUp()) {
-							java.util.Enumeration<java.net.InetAddress> addresses = ni.getInetAddresses();
-							while (addresses.hasMoreElements()) {
-								java.net.InetAddress addr = addresses.nextElement();
-								if (addr.getHostAddress().contains(".") && !addr.getHostAddress().startsWith("127.")) {
-									return addr.getHostAddress();
-								}
-							}
-						}
-					}
-				} else {
-					java.util.Enumeration<java.net.InetAddress> addresses = networkInterface.getInetAddresses();
-					while (addresses.hasMoreElements()) {
-						java.net.InetAddress addr = addresses.nextElement();
-						if (addr.getHostAddress().contains(".") && !addr.getHostAddress().startsWith("127.")) {
-							return addr.getHostAddress();
-						}
-					}
-				}
-			}
-			
-			return hostAddress;
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                String interfaceName = networkInterface.getDisplayName().toLowerCase();
+
+                // Skip loopback, virtual, and disabled interfaces
+                if (networkInterface.isLoopback() || networkInterface.isVirtual() || !networkInterface.isUp() || 
+                    interfaceName.contains("virtual") || interfaceName.contains("vmnet") || interfaceName.contains("vbox")) {
+                    continue;
+                }
+
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    // Return the first valid IPv4 address found
+                    if (addr.getAddress().length == 4 && !addr.isLoopbackAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
 		} catch (Exception e) {
 			System.err.println("Error getting IP address: " + e.getMessage());
-			// Fallback to localhost if we can't get the actual IP
-			return "127.0.0.1";
 		}
+		// Fallback to localhost if we can't get the actual IP
+		return "127.0.0.1";
 	}
 	
 	/**

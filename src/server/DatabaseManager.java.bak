@@ -1,0 +1,283 @@
+package server;
+
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+/**
+ * Database manager for tracking server sessions and user activity
+ */
+public class DatabaseManager {
+    
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/inksync_db";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "password"; // Change this to your MySQL password
+    
+    private Connection connection;
+    private int currentSessionId;
+    
+    /**
+     * Initialize database connection and create tables if they don't exist
+     */
+    public DatabaseManager() {
+        try {
+            // Load MySQL JDBC driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            
+            // Create database if it doesn't exist
+            createDatabaseIfNotExists();
+            
+            // Connect to database
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            
+            // Create tables if they don't exist
+            createTablesIfNotExist();
+            
+            System.out.println("Database connection established successfully");
+            
+        } catch (Exception e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+            System.err.println("Please check MySQL is running and credentials are correct.");
+            connection = null; // Ensure connection is null on failure
+        }
+    }
+    
+    /**
+     * Create database if it doesn't exist
+     */
+    private void createDatabaseIfNotExists() {
+        try {
+            Connection tempConnection = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306", DB_USER, DB_PASSWORD);
+            
+            Statement stmt = tempConnection.createStatement();
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS inksync_db");
+            tempConnection.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error creating database: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Create tables if they don't exist
+     */
+    private void createTablesIfNotExist() {
+        try {
+            Statement stmt = connection.createStatement();
+            
+            // Server sessions table
+            String createSessionsTable = """
+                CREATE TABLE IF NOT EXISTS server_sessions (
+                    session_id INT AUTO_INCREMENT PRIMARY KEY,
+                    start_time DATETIME NOT NULL,
+                    end_time DATETIME NULL,
+                    status ENUM('active', 'ended') DEFAULT 'active'
+                )
+                """;
+            
+            // User activity table
+            String createUserActivityTable = """
+                CREATE TABLE IF NOT EXISTS user_activity (
+                    activity_id INT AUTO_INCREMENT PRIMARY KEY,
+                    session_id INT NOT NULL,
+                    username VARCHAR(50) NOT NULL,
+                    board_name VARCHAR(100) NOT NULL,
+                    entry_time DATETIME NOT NULL,
+                    exit_time DATETIME NULL,
+                    status ENUM('active', 'exited') DEFAULT 'active',
+                    FOREIGN KEY (session_id) REFERENCES server_sessions(session_id)
+                )
+                """;
+            
+            stmt.executeUpdate(createSessionsTable);
+            stmt.executeUpdate(createUserActivityTable);
+            
+            System.out.println("Database tables created/verified successfully");
+            
+        } catch (SQLException e) {
+            System.err.println("Error creating tables: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Start a new server session
+     * @return session ID
+     */
+    public int startServerSession() {
+        try {
+            String sql = "INSERT INTO server_sessions (start_time, status) VALUES (?, 'active')";
+            PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            
+            LocalDateTime now = LocalDateTime.now();
+            pstmt.setString(1, now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            
+            pstmt.executeUpdate();
+            
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                currentSessionId = rs.getInt(1);
+                System.out.println("Server session started with ID: " + currentSessionId);
+                return currentSessionId;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error starting server session: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return -1;
+    }
+    
+    /**
+     * End the current server session
+     */
+    public void endServerSession() {
+        try {
+            String sql = "UPDATE server_sessions SET end_time = ?, status = 'ended' WHERE session_id = ?";
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            
+            LocalDateTime now = LocalDateTime.now();
+            pstmt.setString(1, now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            pstmt.setInt(2, currentSessionId);
+            
+            pstmt.executeUpdate();
+            System.out.println("Server session ended: " + currentSessionId);
+            
+        } catch (SQLException e) {
+            System.err.println("Error ending server session: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Record user entry
+     * @param username the username
+     * @param boardName the board name
+     * @return activity ID
+     */
+    public int recordUserEntry(String username, String boardName) {
+        try {
+            String sql = "INSERT INTO user_activity (session_id, username, board_name, entry_time, status) VALUES (?, ?, ?, ?, 'active')";
+            PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            
+            pstmt.setInt(1, currentSessionId);
+            pstmt.setString(2, username);
+            pstmt.setString(3, boardName);
+            
+            LocalDateTime now = LocalDateTime.now();
+            pstmt.setString(4, now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            
+            pstmt.executeUpdate();
+            
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                int activityId = rs.getInt(1);
+                System.out.println("User entry recorded: " + username + " on board " + boardName + " (ID: " + activityId + ")");
+                return activityId;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error recording user entry: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return -1;
+    }
+    
+    /**
+     * Record user exit
+     * @param username the username
+     */
+    public void recordUserExit(String username) {
+        try {
+            String sql = "UPDATE user_activity SET exit_time = ?, status = 'exited' WHERE session_id = ? AND username = ? AND status = 'active'";
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            
+            LocalDateTime now = LocalDateTime.now();
+            pstmt.setString(1, now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            pstmt.setInt(2, currentSessionId);
+            pstmt.setString(3, username);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("User exit recorded: " + username);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error recording user exit: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Get current session statistics
+     * @return formatted statistics string
+     */
+    public String getSessionStatistics() {
+        try {
+            StringBuilder stats = new StringBuilder();
+            
+            // Get session info
+            String sessionSql = "SELECT start_time, status FROM server_sessions WHERE session_id = ?";
+            PreparedStatement sessionStmt = connection.prepareStatement(sessionSql);
+            sessionStmt.setInt(1, currentSessionId);
+            
+            ResultSet sessionRs = sessionStmt.executeQuery();
+            if (sessionRs.next()) {
+                stats.append("Session ID: ").append(currentSessionId).append("\n");
+                stats.append("Start Time: ").append(sessionRs.getString("start_time")).append("\n");
+                stats.append("Status: ").append(sessionRs.getString("status")).append("\n\n");
+            }
+            
+            // Get active users
+            String activeUsersSql = "SELECT username, board_name, entry_time FROM user_activity WHERE session_id = ? AND status = 'active'";
+            PreparedStatement usersStmt = connection.prepareStatement(activeUsersSql);
+            usersStmt.setInt(1, currentSessionId);
+            
+            ResultSet usersRs = usersStmt.executeQuery();
+            stats.append("Active Users:\n");
+            while (usersRs.next()) {
+                stats.append("- ").append(usersRs.getString("username"))
+                     .append(" (Board: ").append(usersRs.getString("board_name"))
+                     .append(", Joined: ").append(usersRs.getString("entry_time"))
+                     .append(")\n");
+            }
+            
+            return stats.toString();
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting session statistics: " + e.getMessage());
+            return "Error retrieving statistics";
+        }
+    }
+    
+    /**
+     * Close database connection
+     */
+    public void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Database connection closed");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error closing database connection: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get current session ID
+     * @return session ID
+     */
+    public int getCurrentSessionId() {
+        return currentSessionId;
+    }
+    
+    /**
+     * Get database connection (for external use)
+     * @return database connection
+     */
+    public Connection getConnection() {
+        return connection;
+    }
+} 

@@ -13,6 +13,7 @@ import java.util.Queue;
 
 import command.Command;
 import server.ServerGUI;
+import server.DatabaseManager;
 
 
 /**
@@ -33,6 +34,9 @@ public class Server {
     private final ServerSocket serverSocket;
     private boolean running;
     
+    // Database manager for tracking sessions and user activity
+    private DatabaseManager databaseManager;
+    
     /**
      * Create our server on port port
      * @param port: port for server to listen on
@@ -41,6 +45,13 @@ public class Server {
     public Server(int port) throws IOException {
     	running = true;
     	serverSocket = new ServerSocket(port);
+    	
+    	// Initialize database manager
+    	databaseManager = new DatabaseManager();
+    	
+    	// Start server session in database
+    	databaseManager.startServerSession();
+    	
     	// Add shutdown hook to close server gracefully
     	addShutDownHook();
     }
@@ -191,6 +202,11 @@ public class Server {
     public synchronized void enter(String username, String boardName) {
         Board board = boards.get(boardName);
         board.addUser(username);
+        
+        // Record user entry in database
+        if (databaseManager != null) {
+            databaseManager.recordUserEntry(username, boardName);
+        }
     }
     
     /**
@@ -201,6 +217,11 @@ public class Server {
         for(String boardName: boards.keySet()) {
             Board board = boards.get(boardName);
             board.deleteUser(username);
+        }
+        
+        // Record user exit in database
+        if (databaseManager != null) {
+            databaseManager.recordUserExit(username);
         }
     }
     
@@ -239,11 +260,42 @@ public class Server {
     }
     
     /**
+     * Get current session statistics from database
+     * @return formatted statistics string
+     */
+    public String getSessionStatistics() {
+        if (databaseManager != null) {
+            return databaseManager.getSessionStatistics();
+        }
+        return "Database not available";
+    }
+    
+    /**
      * Shuts down all client connections and then shuts down serverSocket
      * @throws IOException
      */
     public void shutDown() throws IOException {
     	running = false;
+    	
+    	// Record all active users as exited before shutting down
+    	if (databaseManager != null) {
+    	    System.out.println("Recording user exits for server shutdown...");
+    	    for (String boardName : boards.keySet()) {
+    	        Board board = boards.get(boardName);
+    	        String[] activeUsers = board.getUsers();
+    	        for (String username : activeUsers) {
+    	            System.out.println("Recording exit for user: " + username + " on board: " + boardName);
+    	            databaseManager.recordUserExit(username);
+    	        }
+    	    }
+    	}
+    	
+    	// End server session in database
+    	if (databaseManager != null) {
+    	    databaseManager.endServerSession();
+    	    databaseManager.close();
+    	}
+    	
     	for (Socket client: clients) {
     		if (!client.isClosed()) client.close();
     	}
@@ -323,7 +375,7 @@ public class Server {
 									System.out.println("Starting server in background thread...");
 									server.serve();
 								} catch (Exception e) {
-									serverGUI.logMessage("Server error: " + e.getMessage());
+									System.err.println("Server error: " + e.getMessage());
 									e.printStackTrace();
 								}
 							}

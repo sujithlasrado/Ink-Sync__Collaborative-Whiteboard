@@ -22,8 +22,8 @@ public class ServerGUI extends JFrame {
     private JLabel statusLabel;
     private JLabel ipLabel;
     private JLabel pinLabel;
-    private JTextArea logArea;
     private JButton stopButton;
+    private JButton statsButton;
     
     /**
      * Creates a new ServerGUI for the given server
@@ -40,78 +40,96 @@ public class ServerGUI extends JFrame {
     private void setupGUI() {
         setTitle("Ink-Sync Server");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(350, 250);
         setLocationRelativeTo(null);
         setResizable(false);
         
         // Main panel
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.setLayout(new BorderLayout(15, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(new Color(245, 245, 245));
         
         // Info panel
         JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new GridLayout(4, 1, 5, 5));
-        infoPanel.setBorder(BorderFactory.createTitledBorder("Server Information"));
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(100, 100, 100), 1),
+            "Server Information",
+            javax.swing.border.TitledBorder.CENTER,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Arial", Font.BOLD, 14),
+            new Color(50, 50, 50)
+        ));
+        infoPanel.setBackground(Color.WHITE);
         
         // Status
         statusLabel = new JLabel("Status: Running");
         statusLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        statusLabel.setForeground(Color.GREEN);
+        statusLabel.setForeground(new Color(0, 150, 0));
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // IP Address
         String ipAddress = getServerIPAddress();
         ipLabel = new JLabel("Server IP: " + ipAddress);
         ipLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        ipLabel.setForeground(new Color(80, 80, 80));
+        ipLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // PIN (last 3 digits of IP)
+        // PIN (centered and bold black)
         String pin = getPINFromIP(ipAddress);
         pinLabel = new JLabel("PIN: " + pin);
-        pinLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        pinLabel.setForeground(Color.BLUE);
+        pinLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        pinLabel.setForeground(Color.BLACK);
+        pinLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pinLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         
         // Instructions
         JLabel instructionsLabel = new JLabel("Clients should enter this PIN to connect");
         instructionsLabel.setFont(new Font("Arial", Font.ITALIC, 11));
-        instructionsLabel.setForeground(Color.GRAY);
+        instructionsLabel.setForeground(new Color(120, 120, 120));
+        instructionsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         infoPanel.add(statusLabel);
+        infoPanel.add(Box.createVerticalStrut(10));
         infoPanel.add(ipLabel);
+        infoPanel.add(Box.createVerticalStrut(15));
         infoPanel.add(pinLabel);
+        infoPanel.add(Box.createVerticalStrut(10));
         infoPanel.add(instructionsLabel);
-        
-        // Log area
-        logArea = new JTextArea();
-        logArea.setEditable(false);
-        logArea.setFont(new Font("Monospaced", Font.PLAIN, 10));
-        JScrollPane logScrollPane = new JScrollPane(logArea);
-        logScrollPane.setBorder(BorderFactory.createTitledBorder("Server Log"));
-        logScrollPane.setPreferredSize(new Dimension(350, 150));
         
         // Control panel
         JPanel controlPanel = new JPanel();
-        controlPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        controlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        controlPanel.setBackground(new Color(245, 245, 245));
         
         stopButton = new JButton("Stop Server");
-        stopButton.setBackground(Color.RED);
-        stopButton.setForeground(Color.WHITE);
         stopButton.setFont(new Font("Arial", Font.BOLD, 12));
+        stopButton.setBackground(new Color(220, 53, 69));
+        stopButton.setForeground(Color.WHITE);
+        stopButton.setOpaque(true);
+        stopButton.setBorderPainted(false);
+        stopButton.setFocusPainted(false);
+        
+        statsButton = new JButton("Session Stats");
+        statsButton.setFont(new Font("Arial", Font.BOLD, 12));
+        statsButton.setBackground(new Color(0, 123, 255));
+        statsButton.setForeground(Color.WHITE);
+        statsButton.setOpaque(true);
+        statsButton.setBorderPainted(false);
+        statsButton.setFocusPainted(false);
         
         controlPanel.add(stopButton);
+        controlPanel.add(statsButton);
         
         // Add components to main panel
-        mainPanel.add(infoPanel, BorderLayout.NORTH);
-        mainPanel.add(logScrollPane, BorderLayout.CENTER);
+        mainPanel.add(infoPanel, BorderLayout.CENTER);
         mainPanel.add(controlPanel, BorderLayout.SOUTH);
         
         setContentPane(mainPanel);
         
         // Add action listeners
         setupActionListeners();
-        
-        // Add initial log message
-        logMessage("Server started successfully");
-        logMessage("Waiting for client connections...");
     }
     
     /**
@@ -136,6 +154,20 @@ public class ServerGUI extends JFrame {
             }
         });
         
+        // Stats button
+        statsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String stats = server.getSessionStatistics();
+                JOptionPane.showMessageDialog(
+                    ServerGUI.this,
+                    stats,
+                    "Session Statistics",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+        });
+        
         // Window closing
         addWindowListener(new WindowAdapter() {
             @Override
@@ -150,10 +182,10 @@ public class ServerGUI extends JFrame {
      */
     private void stopServer() {
         try {
-            logMessage("Shutting down server...");
             statusLabel.setText("Status: Stopping");
-            statusLabel.setForeground(Color.ORANGE);
+            statusLabel.setForeground(new Color(255, 140, 0));
             stopButton.setEnabled(false);
+            statsButton.setEnabled(false);
             
             // Shutdown server in background thread
             new Thread(new Runnable() {
@@ -161,24 +193,42 @@ public class ServerGUI extends JFrame {
                 public void run() {
                     try {
                         server.shutDown();
-                        logMessage("Server stopped successfully");
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 statusLabel.setText("Status: Stopped");
-                                statusLabel.setForeground(Color.RED);
+                                statusLabel.setForeground(new Color(220, 53, 69));
                                 dispose(); // Close the window
                             }
                         });
                     } catch (Exception e) {
-                        logMessage("Error stopping server: " + e.getMessage());
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                statusLabel.setText("Status: Error");
+                                statusLabel.setForeground(new Color(220, 53, 69));
+                                JOptionPane.showMessageDialog(
+                                    ServerGUI.this,
+                                    "Error stopping server: " + e.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                                );
+                            }
+                        });
                         e.printStackTrace();
                     }
                 }
             }).start();
             
         } catch (Exception e) {
-            logMessage("Error stopping server: " + e.getMessage());
+            statusLabel.setText("Status: Error");
+            statusLabel.setForeground(new Color(220, 53, 69));
+            JOptionPane.showMessageDialog(
+                this,
+                "Error stopping server: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
             e.printStackTrace();
         }
     }
@@ -255,34 +305,5 @@ public class ServerGUI extends JFrame {
             // Fall through to default
         }
         return "001"; // Default fallback
-    }
-    
-    /**
-     * Adds a message to the log area
-     * @param message the message to log
-     */
-    public void logMessage(String message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                logArea.append(java.time.LocalTime.now().toString().substring(0, 8) + " - " + message + "\n");
-                logArea.setCaretPosition(logArea.getDocument().getLength());
-            }
-        });
-    }
-    
-    /**
-     * Updates the status label
-     * @param status the new status text
-     * @param color the color for the status
-     */
-    public void updateStatus(String status, Color color) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                statusLabel.setText("Status: " + status);
-                statusLabel.setForeground(color);
-            }
-        });
     }
 } 

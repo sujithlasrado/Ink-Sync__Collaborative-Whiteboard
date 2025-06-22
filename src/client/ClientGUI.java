@@ -330,6 +330,17 @@ public class ClientGUI extends JFrame {
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setLayout(new BorderLayout());
         this.setResizable(false); 
+        
+        // Add window closing handler to properly exit from server
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                // Only kill client if it's connected to avoid null pointer exceptions
+                if (client.isConnected()) {
+                    client.kill();
+                }
+            }
+        });
+        
         canvas = new Canvas(client);
         canvas.addDrawingController(new DrawingController(client));
         this.addMenuBar();

@@ -3,7 +3,7 @@
 cd "$(dirname "$0")/../.."
 
 echo "Compiling project..."
-javac -cp "lib/*:src" -d bin src/**/*.java
+javac -cp "lib/*:src" -d bin src/server/*.java src/client/*.java src/command/*.java
 
 echo "Starting client..."
 echo "Note: Make sure the server is running first with ./MAC/run-server.sh"

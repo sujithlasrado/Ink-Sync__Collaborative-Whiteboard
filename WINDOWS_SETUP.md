@@ -13,7 +13,7 @@ This guide explains how to run the Ink-Sync server and client on a Windows machi
 
 ### 1. Run the Server
 
-Double-click on `run-server.bat`.
+Double-click on `Windows/run-server.bat`.
 
 -   This will first compile the project and then start the server.
 -   A command prompt window will open, followed by the **Ink-Sync Server GUI**.
@@ -22,7 +22,7 @@ Double-click on `run-server.bat`.
 
 ### 2. Run the Client
 
-Double-click on `run-client.bat`.
+Double-click on `Windows/run-client.bat`.
 
 -   This will open the **Ink-Sync Client** window.
 -   Make sure the server is running before you start a client.
@@ -32,8 +32,8 @@ Double-click on `run-client.bat`.
 
 If you have MySQL set up, you can use these scripts:
 
--   **`view-database.bat`**: Double-click to see the current contents of the `server_sessions` and `user_activity` tables. The window will stay open until you press a key.
--   **`clear-database.bat`**: Double-click to delete all records from the database. This is useful for starting with a fresh log.
+-   **`Windows/view-database.bat`**: Double-click to see the current contents of the `server_sessions` and `user_activity` tables. The window will stay open until you press a key.
+-   **`Windows/clear-database.bat`**: Double-click to delete all records from the database. This is useful for starting with a fresh log.
 
 That's it! You're ready to collaborate.
 
@@ -44,9 +44,9 @@ Ink-Sync/
 ├── src/                    # Source code
 ├── lib/                    # Libraries (MySQL driver, JUnit)
 ├── bin/                    # Compiled classes
-├── run-server.bat         # Windows server script
-├── run-client.bat         # Windows client script
-├── view-database.bat      # Database viewer script
+├── Windows/run-server.bat         # Windows server script
+├── Windows/run-client.bat         # Windows client script
+├── Windows/view-database.bat      # Database viewer script
 └── README.md              # This file
 ```
 

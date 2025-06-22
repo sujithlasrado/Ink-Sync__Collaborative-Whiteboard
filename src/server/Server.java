@@ -33,6 +33,7 @@ public class Server {
     private List<Socket> clients = new LinkedList<Socket>();
     private final ServerSocket serverSocket;
     private boolean running;
+    private boolean shuttingDown = false; // Add flag to prevent double shutdown
     
     // Database manager for tracking sessions and user activity
     private DatabaseManager databaseManager;
@@ -274,7 +275,13 @@ public class Server {
      * Shuts down all client connections and then shuts down serverSocket
      * @throws IOException
      */
-    public void shutDown() throws IOException {
+    public synchronized void shutDown() throws IOException {
+        // Prevent double shutdown
+        if (shuttingDown) {
+            return;
+        }
+        shuttingDown = true;
+        
     	running = false;
     	
     	// Record all active users as exited before shutting down

@@ -4,7 +4,7 @@
         {
             "label": "Run Server",
             "type": "shell",
-            "command": "./run-server.sh",
+            "command": "./MAC/run-server.sh",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -20,7 +20,7 @@
         {
             "label": "Stop Server",
             "type": "shell",
-            "command": "./stop-server.sh",
+            "command": "./MAC/stop-server.sh",
             "group": "build",
             "presentation": {
                 "echo": true,
@@ -33,7 +33,7 @@
         {
             "label": "Check Server Status",
             "type": "shell",
-            "command": "./check-server.sh",
+            "command": "./MAC/check-server.sh",
             "group": "build",
             "presentation": {
                 "echo": true,
@@ -46,7 +46,7 @@
         {
             "label": "Run Client",
             "type": "shell",
-            "command": "./run-client.sh",
+            "command": "./MAC/run-client.sh",
             "group": "build",
             "presentation": {
                 "echo": true,

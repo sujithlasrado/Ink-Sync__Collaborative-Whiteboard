@@ -48,7 +48,7 @@ The application now includes MySQL database integration to track:
 
 3. **Set up the database**:
    ```bash
-   ./setup-database.sh
+   ./MAC/setup-database.sh
    ```
 
 4. **Update database credentials** in `src/server/DatabaseManager.java`:
@@ -67,17 +67,17 @@ The application now includes MySQL database integration to track:
 
 **Start the Server**:
 ```bash
-./run-server.sh
+./MAC/run-server.sh
 ```
 
 **Start a Client**:
 ```bash
-./run-client.sh
+./MAC/run-client.sh
 ```
 
 **Stop the Server**:
 ```bash
-./stop-server.sh
+./MAC/stop-server.sh
 ```
 
 ## Usage
@@ -97,7 +97,7 @@ The application now includes MySQL database integration to track:
 
 View database contents:
 ```bash
-./view-database.sh
+./MAC/view-database.sh
 ```
 
 ## Database Schema

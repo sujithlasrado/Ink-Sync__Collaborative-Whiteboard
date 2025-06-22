@@ -1,121 +1,41 @@
-# Ink-Sync Windows Setup Guide
+# Ink-Sync Setup for Windows
 
-This guide will help Windows users set up and run the Ink-Sync collaborative whiteboard application.
+This guide explains how to run the Ink-Sync server and client on a Windows machine.
 
 ## Prerequisites
 
-- **Java 8 or higher** (Download from: https://adoptium.net/)
-- **MySQL** (Optional - for database tracking)
+1.  **Java Development Kit (JDK)**: Make sure you have JDK version 11 or higher installed. You can download it from [Oracle](https://www.oracle.com/java/technologies/javase-downloads.html) or use an open-source distribution like [AdoptOpenJDK](https://adoptopenjdk.net/).
+2.  **MySQL (Optional)**: If you want to use the database tracking feature, you need a local MySQL server. You can install it using the [MySQL Installer for Windows](https://dev.mysql.com/downloads/installer/). A popular alternative that includes MySQL is [XAMPP](https://www.apachefriends.org/index.html).
 
-## Quick Start (Without Database)
+    *If you don't have MySQL installed, the application will still run, but it won't be able to log server sessions or user activity.*
 
-If you just want to run the application without database tracking:
+## How to Run
 
-1. **Download the project files** from your friend
-2. **Open Command Prompt** in the project directory
-3. **Compile and run**:
-   ```cmd
-   javac -cp "lib/*:src" -d bin src/**/*.java
-   java -cp "lib/*:bin:src" server.Server
-   ```
-4. **In another Command Prompt**:
-   ```cmd
-   java -cp "lib/*:bin:src" client.Client
-   ```
+### 1. Run the Server
 
-The application will run without database tracking and show messages like:
-```
-Database connection failed: ...
-Application will run without database tracking.
-```
+Double-click on `run-server.bat`.
 
-## Full Setup (With Database)
+-   This will first compile the project and then start the server.
+-   A command prompt window will open, followed by the **Ink-Sync Server GUI**.
+-   The GUI will show you the **Server IP** and a 3-digit **PIN**. Clients will use this PIN to connect.
+-   To stop the server, click the **"Stop Server"** button on the GUI. This is the recommended way to shut down gracefully.
 
-### Option 1: Install MySQL Server
+### 2. Run the Client
 
-1. **Download MySQL** from: https://dev.mysql.com/downloads/mysql/
-2. **Install MySQL** with default settings
-3. **Set root password** during installation
-4. **Update DatabaseManager.java** with your password:
-   ```java
-   private static final String DB_PASSWORD = "your_password";
-   ```
+Double-click on `run-client.bat`.
 
-### Option 2: Use XAMPP (Easier)
+-   This will open the **Ink-Sync Client** window.
+-   Make sure the server is running before you start a client.
+-   Enter the 3-digit **PIN** from the server GUI to connect.
 
-1. **Download XAMPP** from: https://www.apachefriends.org/
-2. **Install XAMPP** (includes MySQL)
-3. **Start MySQL** from XAMPP Control Panel
-4. **Set root password** (usually empty by default)
-5. **Update DatabaseManager.java**:
-   ```java
-   private static final String DB_PASSWORD = ""; // or your password
-   ```
+## Database Management (Optional)
 
-### Option 3: Use WAMP
+If you have MySQL set up, you can use these scripts:
 
-1. **Download WAMP** from: https://www.wampserver.com/
-2. **Install WAMP** (includes MySQL)
-3. **Start WAMP** and ensure MySQL is running
-4. **Update DatabaseManager.java** with your credentials
+-   **`view-database.bat`**: Double-click to see the current contents of the `server_sessions` and `user_activity` tables. The window will stay open until you press a key.
+-   **`clear-database.bat`**: Double-click to delete all records from the database. This is useful for starting with a fresh log.
 
-## Running the Application
-
-### Method 1: Using Scripts (Recommended)
-
-1. **Open Command Prompt** in the project directory
-2. **Run the server**:
-   ```cmd
-   run-server.bat
-   ```
-3. **In another Command Prompt**:
-   ```cmd
-   run-client.bat
-   ```
-
-### Method 2: Manual Commands
-
-1. **Compile the project**:
-   ```cmd
-   javac -cp "lib/*:src" -d bin src/**/*.java
-   ```
-
-2. **Start the server**:
-   ```cmd
-   java -cp "lib/*:bin:src" server.Server
-   ```
-
-3. **Start a client**:
-   ```cmd
-   java -cp "lib/*:bin:src" client.Client
-   ```
-
-## Connecting to Your Friend's Server
-
-1. **Ask your friend for their server PIN** (last 3 digits of their IP)
-2. **Enter the PIN** in the client connection dialog
-3. **Enter your username** and join a board
-4. **Start drawing collaboratively!**
-
-## Troubleshooting
-
-### Java Issues
-- **"java not recognized"**: Install Java and add to PATH
-- **"javac not found"**: Install Java JDK (not just JRE)
-
-### MySQL Issues
-- **"Access denied"**: Check username/password in DatabaseManager.java
-- **"Connection refused"**: Make sure MySQL is running
-- **"Driver not found"**: The MySQL driver is included in the lib folder
-
-### Network Issues
-- **"Connection timeout"**: Check if server is running and PIN is correct
-- **"Address already in use"**: Server is already running, use different port
-
-### Database Not Working
-- The application will run without database tracking
-- You'll see messages about database connection failing
-- All drawing and collaboration features will still work
+That's it! You're ready to collaborate.
 
 ## File Structure
 

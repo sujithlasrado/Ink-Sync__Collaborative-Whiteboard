@@ -1,4 +1,7 @@
 #!/bin/bash
+# Change directory to the script's parent directory (project root)
+cd "$(dirname "$0")/.."
+
 echo "Looking for running server process..."
 
 # Method 1: Try to kill by process name (graceful)
@@ -23,7 +26,7 @@ if [ $? -eq 0 ]; then
 fi
 
 # Method 4: Try to find and kill by port (if server runs on specific port)
-lsof -ti:4444 | xargs kill -9 2>/dev/null
+PID=$(lsof -t -i:4444)
 if [ $? -eq 0 ]; then
     echo "Server stopped successfully by killing port 4444!"
     exit 0

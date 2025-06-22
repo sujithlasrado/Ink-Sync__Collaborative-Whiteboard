@@ -79,6 +79,7 @@ public class Canvas extends JPanel {
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in
 	 * pixels relative to the upper-left corner of the drawing buffer.
 	 */
+        @SuppressWarnings("CallToPrintStackTrace")
 	protected void drawLineSegmentAndCall(int x1, int y1, int x2, int y2, int color, float width) {
 		drawLineSegment(x1, y1, x2, y2, color, width);
 		try {

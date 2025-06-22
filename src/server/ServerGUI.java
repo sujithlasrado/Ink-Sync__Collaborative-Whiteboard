@@ -76,7 +76,7 @@ public class ServerGUI extends JFrame {
         ipLabel.setForeground(new Color(80, 80, 80));
         ipLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // PIN (centered and bold black)
+        // PIN (last 6 digits of IP)
         String pin = getPINFromIP(ipAddress);
         pinLabel = new JLabel("PIN: " + pin);
         pinLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -283,27 +283,21 @@ public class ServerGUI extends JFrame {
     }
     
     /**
-     * Extracts the PIN (last 3 digits) from an IP address
+     * Extracts the PIN (last two parts of IP) from an IP address, as a 6-digit string.
      * @param ipAddress the IP address
-     * @return the PIN as a string
+     * @return the PIN as a 6-digit string (e.g., "200034")
      */
     private String getPINFromIP(String ipAddress) {
         try {
             String[] parts = ipAddress.split("\\.");
             if (parts.length == 4) {
-                String lastOctet = parts[3];
-                // Ensure it's a 3-digit PIN by padding with zeros if necessary
-                if (lastOctet.length() == 1) {
-                    return "00" + lastOctet;
-                } else if (lastOctet.length() == 2) {
-                    return "0" + lastOctet;
-                } else {
-                    return lastOctet;
-                }
+                int part3 = Integer.parseInt(parts[2]);
+                int part4 = Integer.parseInt(parts[3]);
+                return String.format("%03d%03d", part3, part4);
             }
         } catch (Exception e) {
             // Fall through to default
         }
-        return "001"; // Default fallback
+        return "000001"; // Default fallback
     }
 } 

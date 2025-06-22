@@ -69,11 +69,11 @@ public class Client {
 	}
 	
 	/**
-	 * Connects to server using a PIN (last 3 digits of server IP).
+	 * Connects to server using a 6-digit PIN.
 	 * Constructs the full server IP by taking the client's IP and replacing
-	 * the last 3 digits with the provided PIN.
+	 * the last two octets with the ones derived from the PIN.
 	 * 
-	 * @param pin the last 3 digits of the server IP address
+	 * @param pin the 6-digit PIN from the server GUI
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
@@ -81,18 +81,16 @@ public class Client {
 		// Get client's local IP address
 		String clientIP = getLocalIPAddress();
 		
-		// Remove leading zeros from PIN to get the actual number
-		String cleanPin = pin.replaceFirst("^0+", "");
-		if (cleanPin.isEmpty()) {
-			cleanPin = "0"; // If PIN was all zeros, use "0"
-		}
+		// Parse the 6-digit PIN
+		String part3 = Integer.toString(Integer.parseInt(pin.substring(0, 3)));
+		String part4 = Integer.toString(Integer.parseInt(pin.substring(3, 6)));
+
+		// Construct the server IP
+		String serverIP = clientIP.substring(0, clientIP.indexOf('.', clientIP.indexOf('.') + 1)) + "." + part3 + "." + part4;
 		
-		// Remove last 3 digits and append the clean PIN
-		String serverIP = clientIP.substring(0, clientIP.lastIndexOf('.') + 1) + cleanPin;
-		
-		System.out.println("Client IP: " + clientIP);
-		System.out.println("PIN: " + pin + " (cleaned: " + cleanPin + ")");
-		System.out.println("Connecting to server IP: " + serverIP);
+		System.out.println("Client IP Subnet: " + clientIP.substring(0, clientIP.indexOf('.', clientIP.indexOf('.') + 1)));
+		System.out.println("PIN: " + pin + " -> Parts: " + part3 + "." + part4);
+		System.out.println("Connecting to constructed server IP: " + serverIP);
 		
 		// Connect to the server with timeout
 		socket = new Socket();

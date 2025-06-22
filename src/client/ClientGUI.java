@@ -180,44 +180,7 @@ public class ClientGUI extends JFrame {
         });
         
         // Connect button action listener
-        connectButton.addActionListener(new ActionListener() {
-            public synchronized void actionPerformed(ActionEvent e) {
-                String pin = pinInputField.getText().trim();
-                
-                // Validate PIN input
-                if (pin.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Please enter a server PIN.", "Try again", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                
-                if (!pin.matches("\\d{3}")) {
-                    JOptionPane.showMessageDialog(dialog, "PIN must be exactly 3 digits.", "Try again", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                
-                try {
-                    // Connect to server using PIN
-                    client.connectWithPin(pin);
-                    
-                    // Enable board selection and related components
-                    boardList.setEnabled(true);
-                    newBoard.setEnabled(true);
-                    newBoardButton.setEnabled(true);
-                    startButton.setEnabled(true);
-                    connectButton.setEnabled(false); // Disable connect button after successful connection
-                    pinInputField.setEnabled(false); // Disable PIN input after connection
-                    
-                    // Load boards from server
-                    loadBoardsFromServer();
-                    
-                    JOptionPane.showMessageDialog(dialog, "Successfully connected to server!", "Connection", JOptionPane.INFORMATION_MESSAGE);
-                    
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(dialog, "Failed to connect to server: " + ex.getMessage(), "Connection Error", JOptionPane.ERROR_MESSAGE);
-                    ex.printStackTrace();
-                }
-            }
-        });
+        connectButton.addActionListener(e -> handleConnection());
         
         //handles what happens when the user presses start
         //enters the user is possible and sets up the canvas
@@ -261,6 +224,42 @@ public class ClientGUI extends JFrame {
             }
         });
 
+    }
+    
+    /**
+     * Handles the logic for connecting to the server.
+     * Called by the 'Connect' button.
+     */
+    private void handleConnection() {
+        String pin = pinInputField.getText().trim();
+        
+        // Validate PIN input
+        if (!pin.matches("\\d{6}")) {
+            JOptionPane.showMessageDialog(dialog, "PIN must be exactly 6 digits.", "Try again", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try {
+            // Connect to server using PIN
+            client.connectWithPin(pin);
+            
+            // Enable board selection and related components
+            boardList.setEnabled(true);
+            newBoard.setEnabled(true);
+            newBoardButton.setEnabled(true);
+            startButton.setEnabled(true);
+            connectButton.setEnabled(false); // Disable connect button after successful connection
+            pinInputField.setEnabled(false); // Disable PIN input after connection
+            
+            // Load boards from server
+            loadBoardsFromServer();
+            
+            JOptionPane.showMessageDialog(dialog, "Successfully connected to server!", "Connection", JOptionPane.INFORMATION_MESSAGE);
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(dialog, "Failed to connect to server: " + ex.getMessage(), "Connection Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
     }
     
     /**

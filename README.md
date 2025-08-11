@@ -173,6 +173,6 @@ java -cp "lib/*:bin:src" org.junit.runner.JUnitCore client.ClientTest server.Ser
 
 <div align="center">
 
-**Built with ❤️ by Srujan Divakar using Java, Swing, and MySQL**
+**Built with ❤️ by Srujan Divakar and Sujith Lasrado using Java, Swing, and MySQL**
 
 </div>
